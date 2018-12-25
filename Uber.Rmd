@@ -1,0 +1,165 @@
+---
+title: "Traffic flow analysis from Uber movement data"
+author: "Roman Portela Suarez & Sergio Sancho Sanz"
+toc: true
+output: pdf_document
+warnings: false
+---
+
+```{r setup, include=FALSE}
+library(rgeos)
+library(igraph)
+library(rgdal)
+library(rgl)
+library(sp)
+library(ggplot2)
+
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\Markdown\\data")
+amsterdam <- read.csv("amsterdam-wijk-2018-1-OnlyWeekdays-HourlyAggregate.csv", header = TRUE, sep = ",")
+polys <- readOGR("amsterdam_wijk.json")
+```
+
+## Introduction
+
+```{r}
+adj_matrix <- gTouches(polys, byid = TRUE)
+```
+
+
+```{r}
+plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
+```
+
+## Creating the graphs
+
+
+
+```{r warning=FALSE}
+#Template graph: undirected and weighted (value 1 by default). Some centralities may fail for weight=0
+g_original <- graph_from_adjacency_matrix(adj_matrix, weighted=TRUE, mode="undirected") %>% set_edge_attr("weight", value = 1)
+
+#Calculate all shortest paths
+sp <- list()
+for (i in 1:nrow(adj_matrix)){
+  sp[[length(sp) + 1]] <- get.shortest.paths(g_original, i)
+}
+
+#g is a list of graphs, one per hour of day
+g <- list()
+
+#Centralities:
+degree.cent <- list()
+degree.str.cent <- list()
+closeness.cent <- list()
+betweenness.cent <- list()
+eigen.cent <- list()
+page.rank.cent <- list()
+
+#Communities
+betweenness.com <- list()
+fast.greedy.com <- list()
+label.prop.com <- list()
+spinglass.com <- list()
+walktrap.com <- list()
+optimal.com <- list()
+
+#Index i=TRUE means that graph i is weakly connected
+is_connected <- list() 
+```
+
+```{r warning=FALSE}
+for (hour in 1:24){
+  current_data <- subset(amsterdam, hod==hour-1)
+  g[[length(g) + 1]] <- g_original
+  
+  for(i in 1:nrow(current_data)) {
+    trip <- current_data[i,]
+    #ID = position in matrix
+    from <- trip$sourceid
+    to <- trip$dstid
+    
+    #Se convierte el camino A B C en vector A B B C
+    route <- as.vector(sp[[from]]$vpath[[to]])
+    EP = rep(route, each=2)[-1]
+    EP = EP[-length(EP)]
+    
+    #Coger ID de arista AB y BC (para acceder a E(g[[hour]]))
+    edge_ids <- get.edge.ids(g[[hour]], EP)
+    
+    #Incrementar weight de arista AB y BC
+    E(g[[hour]])$weight[edge_ids] = E(g[[hour]])$weight[edge_ids] + 1
+    
+  }
+  
+  is_connected[[length(is_connected) +1]] <- is.connected(g[[hour]], mode="weak")
+  
+  ##CENTRALITIES
+  #Grado de un nodo (sin peso)
+  degree.cent[[length(degree.cent) + 1]] <- centr_degree(g[[hour]], mode = "all")
+  
+  #Strength = suma de pesos de aristas por nodo
+  degree.str.cent[[length(degree.str.cent) + 1]] <- strength(g[[hour]], mode = "all")
+  
+  #Numero de caminos con menos tráfico que pasan por un nodo (suma de pesos minimizada)
+  betweenness.cent[[length(betweenness.cent) + 1]] <- betweenness(g[[hour]], directed = FALSE)
+  
+  #Parecido a pagerank. Una zona está congestionada si lo está, o si sus adyacentes también. Cuanto mayor, mejor.
+  eigen.cent[[length(eigen.cent) + 1]] <- eigen_centrality(g[[hour]], directed = FALSE)
+  
+  #This is a disconnected graph, so closeness may not be usefull
+  closeness.cent[[length(closeness.cent) + 1]] <- closeness(g[[hour]], mode = "all")
+  
+  #PageRank
+  page.rank.cent[[length(page.rank.cent)+1]] <- page_rank(g[[hour]])
+  
+  
+  
+  ##COMUNITIES
+  #betweenness.com[[length(betweenness.com) + 1]] <- cluster_edge_betweenness(g[[hour]])
+  #fast.greedy.com[[length(fast.greedy.com) + 1]] <- cluster_fast_greedy(g[[hour]])
+  #label.prop.com[[length(label.prop.com) + 1]] <- cluster_label_prop(g[[hour]])
+  #walktrap.com[[length(walktrap.com) + 1]] <- cluster_walktrap(g[[hour]])
+  #optimal.com[[length(optimal.com) + 1]] <- cluster_optimal(g[[hour]])
+  
+  #spinglass does not work with unconnected graphs
+}
+
+```
+
+
+## Analysis
+```{r warning=FALSE}
+#Number of connected graphs
+
+ betweenness.com <- list()
+for (hour in 1:24){
+  
+}
+
+
+
+
+sum(as.integer(is_connected))
+```
+
+
+
+```{r warning=FALSE}
+#Show centralities
+rbPal <- colorRampPalette(c('#ffcdd2','#b71c1c'))
+
+png(filename="C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\img\\degree.str.centr\\str_%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(degree.str.cent[[hour]],breaks = 100))]
+  plot(polys, main = paste("Zones in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+  dev.off()
+
+```
+
+### Color comunidades
+```{r warning=FALSE}
+for (hour in 1:24){
+  plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(betweenness.com[[hour]]),border="black", lwd=2)
+}
+```
