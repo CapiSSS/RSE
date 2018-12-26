@@ -14,7 +14,7 @@ library(rgl)
 library(sp)
 library(ggplot2)
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\Markdown\\data")
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\data")
 amsterdam <- read.csv("amsterdam-wijk-2018-1-OnlyWeekdays-HourlyAggregate.csv", header = TRUE, sep = ",")
 polys <- readOGR("amsterdam_wijk.json")
 ```
@@ -115,13 +115,11 @@ for (hour in 1:24){
   
   
   ##COMUNITIES
-  #betweenness.com[[length(betweenness.com) + 1]] <- cluster_edge_betweenness(g[[hour]])
-  #fast.greedy.com[[length(fast.greedy.com) + 1]] <- cluster_fast_greedy(g[[hour]])
-  #label.prop.com[[length(label.prop.com) + 1]] <- cluster_label_prop(g[[hour]])
-  #walktrap.com[[length(walktrap.com) + 1]] <- cluster_walktrap(g[[hour]])
-  #optimal.com[[length(optimal.com) + 1]] <- cluster_optimal(g[[hour]])
+  betweenness.com[[length(betweenness.com) + 1]] <- cluster_edge_betweenness(g[[hour]])
+  fast.greedy.com[[length(fast.greedy.com) + 1]] <- cluster_fast_greedy(g[[hour]])
+  label.prop.com[[length(label.prop.com) + 1]] <- cluster_label_prop(g[[hour]])
+  walktrap.com[[length(walktrap.com) + 1]] <- cluster_walktrap(g[[hour]])
   
-  #spinglass does not work with unconnected graphs
 }
 
 ```
@@ -130,15 +128,6 @@ for (hour in 1:24){
 ## Analysis
 ```{r warning=FALSE}
 #Number of connected graphs
-
- betweenness.com <- list()
-for (hour in 1:24){
-  
-}
-
-
-
-
 sum(as.integer(is_connected))
 ```
 
@@ -148,18 +137,115 @@ sum(as.integer(is_connected))
 #Show centralities
 rbPal <- colorRampPalette(c('#ffcdd2','#b71c1c'))
 
-png(filename="C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\img\\degree.str.centr\\str_%02d.png")
+#Strength
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\degree.str.cent")
+png(filename="%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(degree.str.cent[[hour]],breaks = 100))]
-  plot(polys, main = paste("Zones in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+  plot(polys, main = paste("Strength degree centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
-  dev.off()
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png degree.str.cent.gif")
+#file.remove(list.files(pattern=".png"))
+
+  
+#Degree
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\degree.cent")
+png(filename="%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(degree.cent[[hour]]$res,breaks = 100))]
+  plot(polys, main = paste("Degree centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png degree.cent.gif")
+#file.remove(list.files(pattern=".png"))
+
+  
+#Closeness
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\closeness.cent")
+png(filename="%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(closeness.cent[[hour]],breaks = 100))]
+  plot(polys, main = paste("Closeness centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png closeness.cent.gif")
+#file.remove(list.files(pattern=".png"))
+
+  
+#Betweenness
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\betweenness.cent")
+png(filename="%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(betweenness.cent[[hour]],breaks = 100))]
+  plot(polys, main = paste("Betweenness centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png betweenness.cent.gif")
+#file.remove(list.files(pattern=".png"))
+
+
+#Eigen
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\eigen.cent")
+png(filename="%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(eigen.cent[[hour]]$vector,breaks = 100))]
+  plot(polys, main = paste("Eigen centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png eigen.cent.gif")
+#file.remove(list.files(pattern=".png"))
+
+
+#PageRank
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\page.rank.cent")
+png(filename="%02d.png")
+for (hour in 1:24){
+  Colores <- rbPal(100)[as.numeric(cut(page.rank.cent[[hour]]$vector,breaks = 100))]
+  plot(polys, main = paste("PageRank centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png page.rank.cent.gif")
+#file.remove(list.files(pattern=".png"))
 
 ```
 
 ### Color comunidades
 ```{r warning=FALSE}
+
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\betweenness.com")
+png(filename="%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(betweenness.com[[hour]]),border="black", lwd=2)
 }
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png betweenness.com.gif")
+
+
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\fast.greedy.com")
+png(filename="%02d.png")
+for (hour in 1:24){
+  plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(fast.greedy.com[[hour]]),border="black", lwd=2)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png fast.greedy.com.gif")
+
+
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\label.prop.com")
+png(filename="%02d.png")
+for (hour in 1:24){
+  plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(label.prop.com[[hour]]),border="black", lwd=2)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png label.prop.com.gif")
+
+
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\walktrap.com")
+png(filename="%02d.png")
+for (hour in 1:24){
+  plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(walktrap.com[[hour]]),border="black", lwd=2)
+}
+dev.off()
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png walktrap.com.gif")
+
 ```
