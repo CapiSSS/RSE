@@ -251,20 +251,38 @@ system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png
 ```
 
 
-# Introduction
+# Introduction (R)
 Introduce the analysis we are going to explain in the document and the dataset we used for it.
 
-# Dataset
+Travelling from one place to another is a hard task in big cities. For that reason, some companies like Uber 
 
-# Graph
+# Dataset (R)
+Que datos tenemos : info, formato, fuentes, qué datos interesan, viajes vs zonas. Explicar corto GeoJSON.
+ Problemas: no tenemos rutas, solo origen y destino. 
 
-# Analysis
-Talk about how we implement the shortest path between source and destiny (shortest path in graph: pros and cons)
+# Graph (S)
+Como se ha creado el grafo: con pesos, no dirigido. Por que? Pesos -> trafico
+No dirigido: el hecho de hacerlo dirigido indica que un coche entra o sale de la zona. Sin embargo, al ser la zona un conjunto de carreteras, de las cuales no conocemos su trayectoria ni sentido (es decir, la zona es una BLACK BOX), no podemos saber si una calle en concreto está congestionada SOLO en un sentido.
 
-## Centrality measures
+Talk about how we implement the shortest path between source and destiny (shortest path in graph).
+Cosas que no pudimos hacer: rutas por calles con API
 
-## Communities detection
+## Centrality measures (R)
+Explicar distintas medidas. Referenciar gifs. Poner algunas imagenes de las centralidades.
+
+## Communities detection (S)
 
 Talk about spinglass and optimal communities detection. They could not be used for detecting communities since spinglass does not work with unconnected graphs and optimal algorithm takes a lot of time and resources.
 
-# Conclusion
+# Conclusion and future work (R/S)
+IR AÑADIENDO SEGUN SURJA
+
+Problemas: 
+  -El punto de partida no es por coordenadas, sino por ID de zona. Para zonas grandes, si se quiere usar Maps, esto es un problema.
+  -Las zonas grandes son más propensas a ser elegidas como ruta más corta, a pesar de que geográficamente son grandes (en el grafo solo es un nodo)
+  -Pros de SP por nodos: simple, rápido (si pocos nodos)
+  -Cons de SP por nodos: Esta ruta no se tiene por que corresponder con la real. 
+  
+Mejoras:
+  -Cómo mejorar (usar Maps o similares), calcular optimal (que tarda mucho).
+Tratar 
