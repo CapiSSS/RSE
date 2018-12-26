@@ -249,3 +249,22 @@ dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png walktrap.com.gif")
 
 ```
+
+
+# Introduction
+Introduce the analysis we are going to explain in the document and the dataset we used for it.
+
+# Dataset
+
+# Graph
+
+# Analysis
+Talk about how we implement the shortest path between source and destiny (shortest path in graph: pros and cons)
+
+## Centrality measures
+
+## Communities detection
+
+Talk about spinglass and optimal communities detection. They could not be used for detecting communities since spinglass does not work with unconnected graphs and optimal algorithm takes a lot of time and resources.
+
+# Conclusion
