@@ -13,20 +13,21 @@ library(rgdal)
 library(rgl)
 library(sp)
 library(ggplot2)
+library(knitr)
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\data")
-amsterdam <- read.csv("amsterdam-wijk-2018-1-OnlyWeekdays-HourlyAggregate.csv", header = TRUE, sep = ",")
-polys <- readOGR("amsterdam_wijk.json")
+setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE")
+amsterdam <- read.csv("data\\amsterdam-wijk-2018-1-OnlyWeekdays-HourlyAggregate.csv", header = TRUE, sep = ",")
+polys <- readOGR("data\\amsterdam_wijk.json")
 ```
 
 ## Introduction
 
-```{r}
+```{r eval=FALSE}
 adj_matrix <- gTouches(polys, byid = TRUE)
 ```
 
 
-```{r}
+```{r eval=FALSE}
 plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
 ```
 
@@ -34,7 +35,7 @@ plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
 
 
 
-```{r warning=FALSE}
+```{r warning=FALSE,eval=FALSE}
 #Template graph: undirected and weighted (value 1 by default). Some centralities may fail for weight=0
 g_original <- graph_from_adjacency_matrix(adj_matrix, weighted=TRUE, mode="undirected") %>% set_edge_attr("weight", value = 1)
 
@@ -67,7 +68,7 @@ optimal.com <- list()
 is_connected <- list() 
 ```
 
-```{r warning=FALSE}
+```{r warning=FALSE,eval=FALSE}
 for (hour in 1:24){
   current_data <- subset(amsterdam, hod==hour-1)
   g[[length(g) + 1]] <- g_original
@@ -126,139 +127,169 @@ for (hour in 1:24){
 
 
 ## Analysis
-```{r warning=FALSE}
+```{r warning=FALSE,eval=FALSE}
 #Number of connected graphs
 sum(as.integer(is_connected))
 ```
 
 
 
-```{r warning=FALSE}
+```{r warning=FALSE,eval=FALSE}
 #Show centralities
 rbPal <- colorRampPalette(c('#ffcdd2','#b71c1c'))
 
 #Strength
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\degree.str.cent")
-png(filename="%02d.png")
+png(filename="img\\degree.str.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(degree.str.cent[[hour]],breaks = 100))]
   plot(polys, main = paste("Strength degree centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png degree.str.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\degree.str.cent\\*.png img\\degree.str.cent\\degree.str.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
   
 #Degree
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\degree.cent")
-png(filename="%02d.png")
+png(filename="img\\degree.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(degree.cent[[hour]]$res,breaks = 100))]
   plot(polys, main = paste("Degree centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png degree.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\degree.cent\\*.png img\\degree.cent\\degree.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
   
 #Closeness
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\closeness.cent")
-png(filename="%02d.png")
+png(filename="img\\closeness.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(closeness.cent[[hour]],breaks = 100))]
   plot(polys, main = paste("Closeness centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png closeness.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\closeness.cent\\*.png img\\closeness.cent\\closeness.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
   
 #Betweenness
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\betweenness.cent")
-png(filename="%02d.png")
+png(filename="img\\betweenness.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(betweenness.cent[[hour]],breaks = 100))]
   plot(polys, main = paste("Betweenness centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png betweenness.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\betweenness.cent\\*.png img\\betweenness.cent\\betweenness.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
 
 #Eigen
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\eigen.cent")
-png(filename="%02d.png")
+png(filename="img\\eigen.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(eigen.cent[[hour]]$vector,breaks = 100))]
   plot(polys, main = paste("Eigen centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png eigen.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\eigen.cent\\*.png img\\eigen.cent\\eigen.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
 
 #PageRank
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\page.rank.cent")
-png(filename="%02d.png")
+png(filename="img\\page.rank.cent\\%02d.png")
 for (hour in 1:24){
   Colores <- rbPal(100)[as.numeric(cut(page.rank.cent[[hour]]$vector,breaks = 100))]
   plot(polys, main = paste("PageRank centrality in Amsterdam at ", (hour-1), ":00 h", sep=""), col=Colores,border="black", lwd=1)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png page.rank.cent.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\page.rank.cent\\*.png img\\page.rank.cent\\page.rank.cent.gif")
 #file.remove(list.files(pattern=".png"))
 
 ```
 
 ### Color comunidades
-```{r warning=FALSE}
+```{r warning=FALSE,eval=FALSE}
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\betweenness.com")
-png(filename="%02d.png")
+png(filename="img\\betweenness.com\\%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(betweenness.com[[hour]]),border="black", lwd=2)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png betweenness.com.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\betweenness.com\\*.png img\\betweenness.com\\betweenness.com.gif")
 
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\fast.greedy.com")
-png(filename="%02d.png")
+png(filename="img\\fast.greedy.com\\%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(fast.greedy.com[[hour]]),border="black", lwd=2)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png fast.greedy.com.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\fast.greedy.com\\*.png img\\fast.greedy.com\\fast.greedy.com.gif")
 
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\label.prop.com")
-png(filename="%02d.png")
+png(filename="img\\label.prop.com\\%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(label.prop.com[[hour]]),border="black", lwd=2)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png label.prop.com.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\label.prop.com\\*.png img\\label.prop.com\\label.prop.com.gif")
 
 
-setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y Economicas\\Project\\GitHub\\RSE\\img\\walktrap.com")
-png(filename="%02d.png")
+png(filename="img\\walktrap.com\\%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(walktrap.com[[hour]]),border="black", lwd=2)
 }
 dev.off()
-system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 *.png walktrap.com.gif")
+system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\walktrap.com\\*.png img\\walktrap.com\\walktrap.com.gif")
 
 ```
 
+\newpage
 
 # Introduction (R)
-Introduce the analysis we are going to explain in the document and the dataset we used for it.
+Travelling from one place to another is a hard task in big cities. For that reason, some companies like Uber provide their users with cars, so they can easily travel in exchange of some money. Also, users can take the role of the drivers and get a payment. This service is specially important for tourists: they do not own a vehicle, and using the public transport may take a long time. There are many advantages and disadvantages about services of this kind, but it is not the main objective of this document to discuss them. 
 
-Travelling from one place to another is a hard task in big cities. For that reason, some companies like Uber 
+Uber provides some datasets related with the use of their services in different cities around the world. It is possible to use that data in order to create a graph, where city areas are the nodes and their adjacencies are the edges. Next, we can analyze the traffic flow between different parts of a city. By doing that, it is the objective of this document to detect congested areas (meaning areas where the Uber traffic flow is very dense). Once that metric is calculated, it would be possible to use different criteria to find out the most congested area. That would mean that it is the area where most cars drive in and out, and so it is an important area. Moreover, some community detection algorithms can also be applied to this scenario. By performing this type of analysis, it is possible to identify groups of congested areas (or, in the same way, non congested areas).
+
+Those results could be used to identify which route can be followed to avoid dense traffic, or to identify important parts of the city (assuming that cars tend to drive in important areas).
+
+Once different criteria are used for each kind of annalysis, some discussion will be made regarding how robust or accurate are the used method, together with some possible future improvements.
 
 # Dataset (R)
 Que datos tenemos : info, formato, fuentes, qué datos interesan, viajes vs zonas. Explicar corto GeoJSON.
  Problemas: no tenemos rutas, solo origen y destino. 
+
+We can find a huge amount of information in the Uber website. Once there, we can get datasets which gather information on different big cities around the world, such as London, Paris, Amsterdam, Chicago, Los Angeles, New Dheli or Sydney. The only difference between datasets of different cities is the amount of data, because all of them are characterized by the same information. We chose to analyze the traffic flow in Amsterdam. Hence, every piece of information from this point on was analyzed for this city. 
+
+There are two types of files in the datasets: geographical data (a GeoJSON file), and trips data (a CSV file).
+
+GeoJSON is a format used for describing geographical data using JSON. It allows to define many different areas, shapes or others, using spatial objects (points, lines, polygons...) to do so. These objects are created from points, which are located by coordinates. In the case of the Uber dataset, GeoJSON is used to define areas of a city. An area is defined by a polygon, which can belong to one of the three cathegories below.
+
+* **Simple polygon:** the area is enclosed into an ordinary polygon.
+
+* **Simple polygon with holes:** the area is enclosed into a simple polygon, but there are parts inside that polygon which do not belong to the original area. In this case, The area is represented as an array of polygons. The first one defines the outer ring, while the rest of them define the holes.
+
+* **Multipolygon:** the area is formed by different islands. In this case, it is represented by several polygons, each one of them corresponding to one island.
+
+![Different types of spatial objects, used in GeoJSON](img/Report/GeoJSON-types.png){width=350px}
+
+Each area is a polygon, and is identified by an ID. In the case of Amsterdam, there are `r length(polys)` of them, where the IDs are numbers from 0 to `r length(polys) - 1`. Since GeoJSON is a well kown format, there are different tools to read data from the previous file. The code used for that purpose is shown below, together with the geographical representation of the zones in Amsterdam. Recall that a zone can be formed by different polygons, or have holes. However, the vast majority of zones are defined by simple polygons, and those cases could barely be seen. Hence, all of them are shown using the same color in the figure below. 
+```{r}
+polys <- readOGR("data\\amsterdam_wijk.json", verbose=FALSE)
+plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
+```
+
+
+The other type of file in the dataset is the Uber related one. It is a CSV file where each row corresponds to a single trip. A trip has an origin and a destination, it occured at a time and it has a duration, represented by several statisticals. An example of this kind of data can be found below. Note that the dataset only provides the origin and destination zone ID of the trip, and we do not know the route followed by the car. This will be a problem in the future.
+
+```{r}
+kable(amsterdam[1:5,1:4], caption = "Uber data (columns 1 to 4)")
+kable(amsterdam[1:5,5:7], caption = "Uber data (columns 5 to 7)")
+```
+
+We can slightly tune the information which is gathered in the CSV file, by the following parameters: only week days, only weekends or both; data hourly, weekly or monthly aggregated; data belonging to the first, second, third or forth quarter of a given year. The information analyzed in this document will be from the first quarter of 2018, hourly aggregated and from week days only. Hourly, because it is the most granulated option. Week days only, because we assume that those are the most busy days, and weekends could lower the average traffic flow in some areas. And first quarter of 2018, because it seemed updated enough. 
+
+That means that we will know the time in which the annalyzed trips happened. Hence, we can treat sepparately trips at different times, obtaining the average evolution of the traffic during the day. 
+
+
+
 
 # Graph (S)
 Como se ha creado el grafo: con pesos, no dirigido. Por que? Pesos -> trafico
