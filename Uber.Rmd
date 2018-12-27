@@ -68,22 +68,86 @@ We can slightly tune the information which is gathered in the CSV file, by the f
 
 That means that we will know the time in which the annalyzed trips happened. Hence, we can treat sepparately trips at different times, obtaining the average evolution of the traffic during the day. 
 
-
-
-
 # Graph (S)
-Como se ha creado el grafo: con pesos, no dirigido. Por que? Pesos -> trafico
-No dirigido: el hecho de hacerlo dirigido indica que un coche entra o sale de la zona. Sin embargo, al ser la zona un conjunto de carreteras, de las cuales no conocemos su trayectoria ni sentido (es decir, la zona es una BLACK BOX), no podemos saber si una calle en concreto está congestionada SOLO en un sentido.
 
-Talk about how we implement the shortest path between source and destiny (shortest path in graph).
-Cosas que no pudimos hacer: rutas por calles con API
+The purpose of this project is to obtain a graph from the traffic flow dataset of Uber and perform different analyzes on it. Specifically, centrality measures will be carried out to determine the areas where there is more traffic flow per time interval, at the same time that community detection algorithms are applied to know how the zones of the city can be grouped in clusters according to the traffic analyzed.
+
+The first step is to build the graph from the dataset. The package used for creating and manipulating the graph is _igraph_. As mentioned in the previous section, the dataset is structured with a GeoJSON format. The idea is to create a graph from these data in which each node represents a predefined geographical area of the map and each edge represents a connection between adjacent zones. In addition, the graph is intended to be weighted and undirected. With a weighted graph we can represent how many trips have crossed each of the edges, increasing the weight by 1 for each time a user of Uber has crossed that area. On the other hand, the choice to create an undirected graph is due to the fact that each predefined zone can contain a set of roads, of which we do not know their direction (that is, the area is a black box), so we can not know if a particular road is congested only in one direction. Therefore, with an undirected graph, only the times a user traverses each road, either in one direction or in another, are represented.
+
+To sum up the previous paragraph, we aim to create a weighted undirected graph. From _rgeos_ package the function _gTouches_ allows us to obtain the adjacency matrix from a GeoJSON object, i.e. a $n\times n$ matrix $A$ where
+
+$$A_{ij}= \left\{ \begin{array}{lcc}
+             true &   \text{if}  & \text{i and j are adjacent} \\
+             false & & \text{otherwise}
+             \end{array}
+\right.$$.
+
+Thus, this matrix defines which zones are adjacent to each other, so we can directly create a simple graph from it with the function _graph\_from\_adjacency\_matrix_, from _igraph_ package. This graph only contains the zones (nodes) and the connections (edges) among all of them.
+
+Once you have the simple graph, the second step is to calculate the weights of each of the edges to represent the traffic that circulates from one area to another. As seen in the previous section, this information can not be taken out from the dataset directly, since only the source and destiny zones of each of the travels are provided. Hence, a priori, the route followed in each trip is unknown to us, so we must make an approximation on this path to be able to define complete routes.
+
+The first approach was to use an API that provides the shortest route between two geographical points, such as Project OSRM (Open Source Routing Machine) or Google Maps Platform, in such a way that you can obtain a real approximation of each route. However, there are certain limitations in these APIs that do not allow the calculation of all the routes of the dataset in a reasonable time (e.g. number of queries per second), so this option has been discarded.
+
+The alternative that has been followed is to find the shortest path between the source and destination zones in the graph, which may not be as accurate as the first option (since in the graph each node represents a large area, with lots of possible routes, so the shortest path is calculated at a higher level of abstraction) but that is also a good approximation. Therefore, the shortest path is calculated for each trip and the weight of those edges that make up that path is increased by one unit.
+
+With these steps, a weighted undirected graph is obtained. However, we aim to analyze the traffic flow in the city for each hour interval throughout the day. As the dataset provides information about hourly averaged Uber trips throughout three months, then 24 different graphs are created and trips made within the same interval of time are collected in the same graph.
+
+The analysis performed over these 24 graphs is explained in the following sections. Since there are lots of graphs and multiple algorithms, the results are represented in GIF format attached to this documents, where the evolution of the traffic flow during the day is shown dynamically.
 
 ## Centrality measures (R)
 Explicar distintas medidas. Referenciar gifs. Poner algunas imagenes de las centralidades.
 
 ## Communities detection (S)
 
-Talk about spinglass and optimal communities detection. They could not be used for detecting communities since spinglass does not work with unconnected graphs and optimal algorithm takes a lot of time and resources.
+The analysis of community detection in the graph allows us to know which areas of the city show similar behavior at certain times of the day. The zones that are within the same community tend to connect with a greater probability than with zones of other communities, what, in our case, indicates which zones have similar traffic flow in a certain interval of time.
+
+There are multiple community detection algorithms. We will only focus this analysis on the following ones: Edge-Betweenness, Fast-Greedy, Label Propagation and Walktrap. All of these algorithms take into account the weights of the edges, so they are good approaches for this case. It is worth mentioning that Spinglass and Optimal Modularity algorithms were also used during the tests. However, they were discarded: the first, because it does not work with unconnected networks, and the second, because it used too much computation time for a single graph, so using it in each of the 24 graphs would not entail finishing the analysis in a reasonable time.
+
+### Edge-Betweenness
+
+This algorithm uses the weight of the edges of the graph to detect communities. It is based on the idea that two nodes connected by an edge with a relatively high weight means that this edge is more likely to connect two different communities than one with a low weight. The algorithm iteratively eliminates those edges that have a high weight until some criterion is reached, thus obtaining communities of nodes separated from each other.
+
+The results obtained with this algorithm for each graph are represented in the attached file _betweenness.com.gif_. As an example, the following figure shows the different communities detected in Amsterdam at 9am. It should be mentioned that, in these images, two colors that may seem the same at first glance represent different communities. In this case the algorithm finds 15 (VER ESTO PARA PONERLO CON CODIGO!!!!!!!!!!!!) different communities in the range of 9am to 10am. 
+
+Observing the evolution of the communities detected throughout the day, it can be seen that the communities that vary the most are those farthest from the center, in the east and west, although they are not very substantial variations. This may happen because these zones are more likely to suffer big variations in traffic flow during the day. On the other hand, the communities that vary least in size correspond to central and more busy areas, with a more constant traffic flow than the outskirts.
+
+```{r}
+# NO FUNCIONA. CAMBIAR.
+img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/betweenness.com/10.png", native = TRUE, info = TRUE)
+```
+
+### Fast-Greedy
+
+Fast-Greedy is an iterative algorithm that is based on optimizing the value of a quality function called modularity. The algorithm begins considering each node as an independent community. Subsequently, the communities are merged in such a way that this fusion is locally optimal, i.e. that the merge causes the greatest increase of all in the modularity. It is completed once this value can not be increased further.
+
+The results over all the graphs can be observed in figure _fast.greedy.com.gif_. With this algorithm it can be observed that fewer (larger) communities are detected than with the previous algorithm. At the same time, the results obtained in terms of variation are similar to the ones from the previous algorithm: the sizes of the most central communities practically do not vary throughout the day, while the areas further east and west vary a little more.
+
+```{r}
+# NO FUNCIONA. CAMBIAR.
+img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/fast.greedy.com/10.png", native = TRUE, info = TRUE)
+```
+
+### Label Propagation
+
+This is a very fast and simple algorithm. Label propagation is based on assigning one label out of $k$ in the initial configuration. Then, iteratively each node takes the most frequent label of all its neighbours in a synchronous way until each node has one of the most frequent labels in its neighbourhood.
+
+The results obtained from this algorithm can be seen in figure _label.prop.com.gif_. The evolution in time of the communities vary much more than with the previous algorithms. During rush hours, the city center constains multiple small communities and the zones around it also vary in size. During the rest of the time, mainly at night, there are fewer communities and the variation is not very accused. Given that the central areas are the busiest, it is possible that the differences in traffic (weights) between edges of the city center are greater at peak hours, so, for each zone near the city center, the direct contact with zones out of the center with very low traffic and multiple zones inside the center with different traffic peaks can cause the formation of multiple communities in this part of the city.
+
+```{r}
+# NO FUNCIONA. CAMBIAR.
+img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/label.prop.com/10.png", native = TRUE, info = TRUE)
+```
+
+### Walktrap
+
+This is the last algorithm used for detecting communities. The idea of Walktrap is that performing random walks on the graph lead to stay within the same community, since walking to other community is more unlikely due to the lower number of paths that exist among communities. This idea can be extended to weighted edges, assuming that it is more likely to walk through the edges with higher weights.
+
+This algorithm obtains the largest number of communities of all the algorithms analyzed. The larger communities are close to the center, while in the eastern and western areas there are more and smaller communities. This can happen because near the city center the probability of following a path that leads to the zone with more traffic flow is higher than going other way, so the random walks cover a longer area when performed near the center.
+
+```{r}
+# NO FUNCIONA. CAMBIAR.
+img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/walktrap.com/10.png", native = TRUE, info = TRUE)
+```
 
 # Conclusion and future work (R/S)
 IR AÑADIENDO SEGUN SURJA
