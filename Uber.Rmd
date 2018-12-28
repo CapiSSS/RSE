@@ -24,7 +24,7 @@ polys <- readOGR("data\\amsterdam_wijk.json")
 # Introduction (R)
 Travelling from one place to another is a hard task in big cities. For that reason, some companies like Uber provide their users with cars, so they can easily travel in exchange of some money. Also, users can take the role of the drivers and get a payment. This service is specially important for tourists: they do not own a vehicle, and using the public transport may take a long time. There are many advantages and disadvantages about services of this kind, but it is not the main objective of this document to discuss them. 
 
-Uber provides some datasets related with the use of their services in different cities around the world. It is possible to use that data in order to create a graph, where city areas are the nodes and their adjacencies are the edges. Next, we can analyze the traffic flow between different parts of a city. By doing that, it is the objective of this document to detect congested areas (meaning areas where the Uber traffic flow is very dense). Once that metric is calculated, it would be possible to use different criteria to find out the most congested area. That would mean that it is the area where most cars drive in and out, and so it is an important area. Moreover, some community detection algorithms can also be applied to this scenario. By performing this type of analysis, it is possible to identify groups of congested areas (or, in the same way, non congested areas).
+Uber provides some datasets related with the use of their services in different cities around the world. It is possible to use that data in order to create a graph, where city areas are the nodes and their adjacencies are the edges. Next, we can analyze the traffic flow between different parts of a city. By doing that, it is the objective of this document to detect congested areas (meaning areas where the Uber traffic flow is very dense). Once that metric is calculated, it would be possible to use different criteria to find out the most congested area. That would mean that it is the area where most cars drive in and out, and so it is an important area. Moreover, some community detection algorithms can also be applied to this scenario. By performing this type of analysis, it is possible to identify groups of congested areas (or, in the same way, non congested areas). Note that there is one assumption made here: the Uber traffic is representative of the general traffic flow, meaning that if a particular area is traversed by many Uber cars, then it is likely that the same happens with ordinary traffic.
 
 Those results could be used to identify which route can be followed to avoid dense traffic, or to identify important parts of the city (assuming that cars tend to drive in important areas).
 
@@ -33,8 +33,6 @@ Once different criteria are used for each kind of annalysis, some discussion wil
 The code used during all the process can be found attached to this document.
 
 # Dataset (R)
-Que datos tenemos : info, formato, fuentes, qué datos interesan, viajes vs zonas. Explicar corto GeoJSON.
- Problemas: no tenemos rutas, solo origen y destino. 
 
 We can find a huge amount of information in the Uber website. Once there, we can get datasets which gather information on different big cities around the world, such as London, Paris, Amsterdam, Chicago, Los Angeles, New Dheli or Sydney. The only difference between datasets of different cities is the amount of data, because all of them are characterized by the same information. We chose to analyze the traffic flow in Amsterdam. Hence, every piece of information from this point on was analyzed for this city. 
 
@@ -52,7 +50,6 @@ GeoJSON is a format used for describing geographical data using JSON. It allows 
 
 Each area is a polygon, and is identified by an ID. In the case of Amsterdam, there are `r length(polys)` of them, where the IDs are numbers from 0 to `r length(polys) - 1`. Since GeoJSON is a well kown format, there are different tools to read data from the previous file, such as the readOGR function. The geographical representation of the zones in Amsterdam can be found below. Recall that a zone can be formed by different polygons, or have holes. However, the vast majority of zones are defined by simple polygons, and those cases could barely be seen. Hence, all of them are shown using the same color in the figure below. 
 ```{r echo = FALSE}
-polys <- readOGR("data\\amsterdam_wijk.json", verbose=FALSE)
 plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
 ```
 
@@ -92,10 +89,74 @@ The alternative that has been followed is to find the shortest path between the 
 
 With these steps, a weighted undirected graph is obtained. However, we aim to analyze the traffic flow in the city for each hour interval throughout the day. As the dataset provides information about hourly averaged Uber trips throughout three months, then 24 different graphs are created and trips made within the same interval of time are collected in the same graph.
 
-The analysis performed over these 24 graphs is explained in the following sections. Since there are lots of graphs and multiple algorithms, the results are represented in GIF format attached to this documents, where the evolution of the traffic flow during the day is shown dynamically.
+The analysis performed over these 24 graphs is explained in the following sections. Since there are lots of graphs and multiple algorithms, the results are represented in GIF format attached to this documents, where the evolution of the traffic flow during the day is shown dynamically. Both in the GIFs and in the images, the darker the color of an area, the higher the value of the measure.
 
 ## Centrality measures (R)
-Explicar distintas medidas. Referenciar gifs. Poner algunas imagenes de las centralidades.
+
+Once the graph is created, it is time to perform some calculations with different criteria in order to find out the most important areas of the city. The meaning of _important_ may differ from one approache to another, and will determine the interpretation from the information obtained in the results. In this section, different centrality measures will be applied on the graph. Each one of them will be explained, and the results will be shown with some images. 
+
+Recall that the graph is actually a dynamic graph, were each node evolves in intervals of one hour of time. This behaviour is better shown in movement, rather than in a static image. That is why some GIFs are attached to this document. Each one of them shows the evolution of the graph depending on the time and the centrality used. 
+
+### Degree centrality
+The degree centrality determines that the importance of a node is directly proportional to the number of edges between that node and the others. Since in the graph used for modelling the zones in the city of Amsterdam a pair of nodes can only have one (or none) edge, then this means that the most important area in the city is the one with more neighbours. In other words, an area is very important if it is possible to reach many areas from the original one.
+
+Before showng the results, let's discuss this measure. If an area has many adjacent areas, then it is true that the zone is potentially traversed by many cars, because it is possible to reach many places from there. However, reacall that not all zones are similar to each other. There are some huge zones, while other areas are tiny. In the case of Amsterdam, large areas tend to be far from the city center, while small areas tend to be in the city center. A large area has a large perimeter, meaning that it will normally have many neighbors. However, before performing any calculations, we can predict that the most important areas will tend to be centric, because it is where most of the activity is contencrated. Actually, it may be the reason why those geographical areas are divided into smaller zones.
+
+While the graph is a dynamic one, this measure do not depend on the Uber trips, but only in the adjacencies. Hence, one single image is enough to show the results of this measure, because it will not change over time (the zones have always the same neighbours).
+
+
+![Degree centrality in Amsterdam](img/degree.cent/01.png){width=400px}
+
+It can be seen in the figure that the most important areas are big ones, as expected. The darker colors are present in huge areas close to small ones. That means, large areas close to the city center. This makes sence, because if a large area is surrounded by small ones, then the number of neighbors can be higher. Also, there are some small areas in the city center with a dark color, meaning that the number of neighbors is high, and therefore its importance is high.
+
+Using this centrality, we get a low number of important areas located in or near the city center, which makes sense. Also, there is another important area in the outskirts of the city. However, except for these few cases, the rest of the areas in the graph have a similar color, meaning a similar importance.  
+
+To sum up, this centrality does not seem to be a good aproach, because it does not take into account the Uber trips. However, the results are quite logical, being most of the important areas located in the city center.
+
+### Strength degree centrality
+This one is a similar measure to the previous one. However, there is a very important difference: now, the importance of a node is determined not by its number of edges, but with the weighted sum of its edges. Recall that the weight of an edge between two nodes is the number of Uber cars which drove for a given time between both nodes, assuming that the route is the shortest path between origin and destination.
+
+This centrality seems to be a very good one for this scenario. As said in the introduction of this document, the annalisys is performed in order to find out congested (or not congested) areas. Since the importance of a node is directly proportional to the number of cars which traspass that zone, then this one seems to be a good approach.
+
+Recall that we are working with a dynamic graph. Hence, the number of trips between zones vary with time, obtaining a different value of the strength degree centrality for every hour. This evolution can be better seen in the attached GIF. 
+
+![Strength degree centrality in Amsterdam at 5:00h](img/degree.str.cent/06.png){width=300px} ![Strength degree centrality in Amsterdam at 15:00h](img/degree.str.cent/16.png){width=300px}
+
+Two images corresponding to different times are provided. First, the traffic flow at 5:00h. Second, the traffic flow at 15:00h. In both cases the most important areas are the same ones. Those are big areas close to the city center, and many small areas in the city center. That means that those are the areas traspassed by most cars. 
+
+The areas in the outskirts of the city are barely used by cars, while the closer to the city center an area is, the more cars drive there. There is an important fact that may explain why the small areas in the city center are less congested that the ones surrounding. Amsterdam is a beautiful city full of canals in the city center. There are small roads in both sides of the canals, but those are both full of people and bicicles. Hence, it makes sense for people to finish or begin their Uber trips in streets close to the city center (where most of the activity is concentrated), but close enough not to be far from where they are. In other words, it makes sense that there are many areas in the city senter where the traffic is not dense.
+
+Now, let's compare both times in the figure. As said before, the most important areas are the same ones in both cases. However, at 5:00h there are much less traffic than at 15:00h, which is predictible; most of the activity in a city take place during the day. However, there is still traffic at 5:00h, when it seems reasonable to assume that some people start their work.
+
+In the GIF attached to this document, it is possible to observe that the peak of traffic flow is obtained during the day, but there is still a lot of traffic until 2 or 3 am. The lowest amount of cars is obtained at 5:00h. From that point on, it starts to increase again.
+
+Note that the assumption made in the degree centrality is shown to be correct: big areas, which have many neighbors, tend to be traspassed by many cars.
+
+
+
+### Closeness centrality
+The importance of a node (in a weighted graph) in the closeness centrality is inversely proportional to the sum of the weights of the shortest paths between that node and all the others. In other words, the most central node is the one from which it is possible to reach all the others avoiding as much traffic as possible. So, the higher the measure is, the better that node is for travelling to other nodes avoiding traffic jams.
+
+
+![Closeness centrality in Amsterdam at 5:00h](img/closeness.cent/06.png){width=300px} ![Closeness centrality in Amsterdam at 22:00h](img/closeness.cent/23.png){width=300px}
+
+
+There are three nodes which remain very important all the time, by this metric. Those are small areas outside the city center. The rest of the nodes remain low in this metric, meaning that it is more likely to follow a congested route from those nodes. While the magnitude (or color, in the figures) remain more or less static, there is a slightly difference between day and night. For example, at 5:00h all the nodes seem to increase this metric. As seen in the strength degree centrality, at that time the traffic is very low, so it is more likely to avoid traffic jams from any node. However, during the day the traffic generaly increases, and the closeness centrality of the nodes decrease. This is an expected result.
+
+
+### Betweenness centrality
+In a weighted graph like this one, the betweenness centrality of a node measures how many paths between a pair of other nodes uses traverse particular node, where that path is the one which minimizes the sum of weights of the route. In other words, if a node is rated high by this centrality, it means that there are many traffic-free routes which traverse that node. Hence, that node is important for drivers if they want to avoid traffic.
+
+![Betweenness centrality in Amsterdam at 3:00h](img/betweenness.cent/04.png){width=300px} ![Betweenness centrality in Amsterdam at 14:00h](img/betweenness.cent/15.png){width=300px}
+
+Again, there are differences between day and night times, even though those are slightly ones. As said before, there is less traffic during the night, so there will be more important nodes by this metric at night. On the contrary, there are less important nodes during the day, because the traffic is higher and so the sum weight of the path also increases. Overall, there is a most important node, which is always the same for all times. That one is a big area close to the city center.
+
+To sum up, high rated nodes by betweenness centrality are important nodes for those drivers who want to avoid traffic, and one node highlights over the others.
+
+### Eigen centrality
+
+### Page Rank centrality
+
 
 ## Communities detection (S)
 
