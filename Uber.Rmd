@@ -70,7 +70,7 @@ That means that we will know the time in which the annalyzed trips happened. Hen
 
 # Graph (S)
 
-The purpose of this project is to obtain a graph from the traffic flow dataset of Uber and perform different analyzes on it. Specifically, centrality measures will be carried out to determine the areas where there is more traffic flow per time interval, at the same time that community detection algorithms are applied to know how the zones of the city can be grouped in clusters according to the traffic analyzed.
+The purpose of this project is to obtain a graph from the traffic flow dataset of Uber and perform different analyses on it. Specifically, centrality measures will be carried out to determine the areas where there is more traffic flow per time interval, at the same time that community detection algorithms are applied to know how the zones of the city can be grouped in clusters according to the traffic analyzed.
 
 The first step is to build the graph from the dataset. The package used for creating and manipulating the graph is _igraph_. As mentioned in the previous section, the dataset is structured with a GeoJSON format. The idea is to create a graph from these data in which each node represents a predefined geographical area of the map and each edge represents a connection between adjacent zones. In addition, the graph is intended to be weighted and undirected. With a weighted graph we can represent how many trips have crossed each of the edges, increasing the weight by 1 for each time a user of Uber has crossed that area. On the other hand, the choice to create an undirected graph is due to the fact that each predefined zone can contain a set of roads, of which we do not know their direction (that is, the area is a black box), so we can not know if a particular road is congested only in one direction. Therefore, with an undirected graph, only the times a user traverses each road, either in one direction or in another, are represented.
 
@@ -111,10 +111,8 @@ The results obtained with this algorithm for each graph are represented in the a
 
 Observing the evolution of the communities detected throughout the day, it can be seen that the communities that vary the most are those farthest from the center, in the east and west, although they are not very substantial variations. This may happen because these zones are more likely to suffer big variations in traffic flow during the day. On the other hand, the communities that vary least in size correspond to central and more busy areas, with a more constant traffic flow than the outskirts.
 
-```{r}
-# NO FUNCIONA. CAMBIAR.
-img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/betweenness.com/10.png", native = TRUE, info = TRUE)
-```
+
+![Betweenness comunnities from 9:00h to 10:00h](img/betweenness.com/10.png){width=400px}
 
 ### Fast-Greedy
 
@@ -122,10 +120,8 @@ Fast-Greedy is an iterative algorithm that is based on optimizing the value of a
 
 The results over all the graphs can be observed in figure _fast.greedy.com.gif_. With this algorithm it can be observed that fewer (larger) communities are detected than with the previous algorithm. At the same time, the results obtained in terms of variation are similar to the ones from the previous algorithm: the sizes of the most central communities practically do not vary throughout the day, while the areas further east and west vary a little more.
 
-```{r}
-# NO FUNCIONA. CAMBIAR.
-img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/fast.greedy.com/10.png", native = TRUE, info = TRUE)
-```
+
+![Fast-greedy comunnities from 9:00h to 10:00h](img/fast.greedy.com/10.png){width=400px}
 
 ### Label Propagation
 
@@ -133,10 +129,7 @@ This is a very fast and simple algorithm. Label propagation is based on assignin
 
 The results obtained from this algorithm can be seen in figure _label.prop.com.gif_. The evolution in time of the communities vary much more than with the previous algorithms. During rush hours, the city center constains multiple small communities and the zones around it also vary in size. During the rest of the time, mainly at night, there are fewer communities and the variation is not very accused. Given that the central areas are the busiest, it is possible that the differences in traffic (weights) between edges of the city center are greater at peak hours, so, for each zone near the city center, the direct contact with zones out of the center with very low traffic and multiple zones inside the center with different traffic peaks can cause the formation of multiple communities in this part of the city.
 
-```{r}
-# NO FUNCIONA. CAMBIAR.
-img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/label.prop.com/10.png", native = TRUE, info = TRUE)
-```
+![Label propagation comunnities from 9:00h to 10:00h](img/label.prop.com/10.png){width=400px}
 
 ### Walktrap
 
@@ -144,10 +137,9 @@ This is the last algorithm used for detecting communities. The idea of Walktrap 
 
 This algorithm obtains the largest number of communities of all the algorithms analyzed. The larger communities are close to the center, while in the eastern and western areas there are more and smaller communities. This can happen because near the city center the probability of following a path that leads to the zone with more traffic flow is higher than going other way, so the random walks cover a longer area when performed near the center.
 
-```{r}
-# NO FUNCIONA. CAMBIAR.
-img1 <- readPNG("C:/Users/Sergio/Desktop/MÁSTER/2º/REDES SOCIALES Y ECONÓMICAS/PROYECTO/repositorio/RSE/img/walktrap.com/10.png", native = TRUE, info = TRUE)
-```
+
+![Walktrap comunnities from 9:00h to 10:00h](img/walktrap.com/10.png){width=400px}
+
 
 # Conclusion and future work (R/S)
 IR AÑADIENDO SEGUN SURJA
