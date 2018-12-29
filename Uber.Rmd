@@ -242,6 +242,18 @@ Mejoras:
 Tratar 
 
 
+The analysis of traffic in a city can be very important to detect which areas are usually more saturated, the time at which this occurs and for how long. Being able to estimate these three variables with precision would be very useful to be able to carry out better urban planning. With this project we intend to make an approximation to this analysis using the traffic flow of Uber users as data.
+
+A graph allows us to perform multiple calculations and analyzes in a quick and comfortable way. Since the Uber dataset of the city structure has a GeoJSON format, it is easy to obtain the graph of it from functions already predefined in R packages, such as _igraph_ or _rgeos_. In this way, each node of the graph corresponds to a zone of the map, and each edge represents the adjacency of zones, in such a way that two nodes directly connected by an edge in the graph correspond to two adjacent zones in the map.
+
+The calculation of centralities and the detection of communities on the graph are two analyzes that give us an idea about how the traffic flow in the city behaves, in such a way that they allow us to have an idea about what we are looking for. For the case that we analyze in this project, in the city of Amsterdam, the analysis of the centralities indicates that the most central areas of the city are those that have more traffic with respect to the most remote areas, at the same time that, in peak hours, the amount of traffic intensifies in certain areas of the center. The detection of communities (AÑADIR AQUÍ ALGO...............................).
+
+Although the results obtained allow us to get an idea about how traffic in the city behaves by zones, the truth is that there are a number of restrictions that make it impossible to perform a more thorough and accurate analysis. First of all, Uber offers information about the area of origin and the destination of the routes followed in each trip, but not of the intermediate zones that it crosses, so try to deduce the route using the shortest route technique does not represent reality. At the same time, the map of the city only includes zones, which cover several roads, and that causes a great inaccuracy to perform a more precise analysis.
+
+On the other hand, discovering the route of each trip from the graph can also be an error. In the graph all the nodes are equal, the size and distances in meters are not taken into account. However, areas on the map vary greatly in size, and distance is important. Suppose, for example, a case in which there are 5 areas adjacent to each other, 4 small zones and a relatively large area. If the shortest path between two of the small zones is through the other two small zones on the map, the graph will consider that the shortest route will be through the large zone, since the number of jumps would be 2 instead of 3 and, therefore, an error would be made.
+
+Despite these drawbacks and the improvements that could be made in the analysis (for example, using tools such as the Google Maps API to calculate the routes), the results presented in this project may coincide with reality and are valid for knowing the behavior of a city at the zone level, not only of the city of Amsterdam but of any other city that Uber offers in its datasets repository.
+
 \newpage
 # Code used
 ```{r, eval=FALSE}
