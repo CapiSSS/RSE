@@ -21,7 +21,7 @@ polys <- readOGR("data\\amsterdam_wijk.json")
 
 \newpage
 
-# Introduction (R)
+# Introduction
 Travelling from one place to another is a hard task in big cities. For that reason, some companies like Uber provide their users with cars, so they can easily travel in exchange of some money. Also, users can take the role of the drivers and get payed. This service is specially important for tourists, because they do not own a vehicle in the city and using the public transport may take a long time; but also for people living in the city, who do not own a car, or who do not want to waste time finding a parking place. There are many advantages and disadvantages about services of this kind, but it is not the main objective of this document to discuss them. 
 
 Uber provides some datasets related with the use of their services in different cities around the world. It is possible to use that data in order to create a graph, where city areas are the nodes and their adjacencies are the edges. Next, we can analyze the traffic flow between different parts of a city. By doing that, it is the objective of this document to detect congested areas (meaning areas where the Uber traffic flow is very dense). Once that metric is calculated, it would be possible to use different criteria to find out the most congested area. That would mean that it is the area where most cars drive in and out, and so it is an important area. Moreover, some community detection algorithms can also be applied to this scenario. By performing this type of analysis, it is possible to identify groups of congested areas (or, in the same way, non congested areas). Note that there is one assumption made here: the Uber traffic is representative of the general traffic flow, meaning that if a particular area is traversed by many Uber cars, then it is likely that the same happens with ordinary traffic.
@@ -32,7 +32,7 @@ Once different criteria are used for each kind of annalysis, some discussion wil
 
 The code used during all the process can be found attached at the end of this document.
 
-# Dataset (R)
+# Dataset 
 
 We can find a huge amount of information in the Uber website. Once there, we can get datasets which gather information on different big cities around the world, such as London, Paris, Amsterdam, Chicago, Los Angeles, New Dheli or Sydney. The only difference between datasets of different cities is the amount of data, because all of them are characterized by the same information. We chose to analyze the traffic flow in Amsterdam. Hence, every piece of information from this point on was analyzed for this city. 
 
@@ -51,9 +51,8 @@ GeoJSON is a format used for describing geographical data using JSON. It allows 
 Each area is a polygon, and is identified by an ID. In the case of Amsterdam, there are `r length(polys)` of them, where the IDs are numbers from 0 to `r length(polys) - 1`. Since GeoJSON is a well kown format, there are different tools to read data from the previous file, such as the _readOGR_ function. The geographical representation of the zones in Amsterdam can be found below. Recall that a zone can be formed by different polygons, or have holes. However, the vast majority of zones are defined by simple polygons, and those cases could barely be seen. Hence, all of them are shown using the same color in the figure below. Note that the city center of Amsterdam is located where most of the small areas are, and they tend to be larger when their distance to the city center increases (even tough there are some exceptions).
 
 
-```{r echo = FALSE}
-plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
-
+```{r echo = FALSE, fig.width=4.25, fig.height=4.25, fig.align='center'}
+plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=1)
 ```
 
 
@@ -68,7 +67,7 @@ We can slightly tune the information which is gathered in the CSV file, by the f
 
 That means that we will know the time in which the annalyzed trips happened. Hence, we can treat sepparately trips at different times, obtaining the average evolution of the traffic during the day. 
 
-# Graph (S)
+# Graph 
 
 The purpose of this project is to obtain a graph from the traffic flow dataset of Uber and perform different analyses on it. Specifically, centrality measures will be carried out to determine the areas where there is more traffic flow per time interval, at the same time that community detection algorithms are applied to know how the zones of the city can be grouped in clusters according to the traffic analyzed.
 
@@ -94,7 +93,7 @@ With these steps, a weighted undirected graph is obtained. However, we aim to an
 
 The analysis performed over these 24 graphs is explained in the following sections. Since there are lots of graphs and multiple algorithms, the results are represented in GIF format attached to this documents, where the evolution of the traffic flow during the day is shown dynamically. Both in the GIFs and in the images, the darker the color of an area, the higher the value of the measure.
 
-## Centrality measures (R)
+## Centrality measures 
 
 Once the graph is created, it is time to perform some calculations with different criteria in order to find out the most important areas of the city. The meaning of _important_ may differ from one approache to another, and will determine the interpretation from the information obtained in the results. In this section, different centrality measures will be applied on the graph. Each one of them will be explained, and the results will be shown with some images. 
 
@@ -184,7 +183,7 @@ As seen in the figures, it is true that both centralities behave very similarly.
 
 
 
-## Communities detection (S)
+## Communities detection 
 
 The analysis of community detection in the graph allows us to know which areas of the city show similar behavior at certain times of the day. The zones that are within the same community tend to connect with a greater probability than with zones of other communities, what, in our case, indicates which zones have similar traffic flow in a certain interval of time.
 
@@ -228,31 +227,17 @@ This algorithm obtains the largest number of communities of all the algorithms a
 ![Walktrap comunnities from 9:00h to 10:00h](img/walktrap.com/10.png){width=300px}
 
 
-# Conclusion and future work (R/S)
-IR AÑADIENDO SEGUN SURJA
+# Conclusion and future work 
 
-Problemas: 
-  -El punto de partida no es por coordenadas, sino por ID de zona. Para zonas grandes, si se quiere usar Maps, esto es un problema.
-  -Las zonas grandes son más propensas a ser elegidas como ruta más corta, a pesar de que geográficamente son grandes (en el grafo solo es un nodo)
-  -Pros de SP por nodos: simple, rápido (si pocos nodos)
-  -Cons de SP por nodos: Esta ruta no se tiene por que corresponder con la real. 
-  
-Mejoras:
-  -Cómo mejorar (usar Maps o similares), calcular optimal (que tarda mucho).
-Tratar 
+The analysis of traffic in a city can be very important to detect areas which are usually more congested, the time at which this occurs and for how long. Being able to estimate these three variables with precision would be very useful to carry out better urban planning. With this project we intend to make an approximation to this analysis using the traffic flow of Uber users as data.
 
+Although the results obtained allow us to get an idea about how traffic in the city behaves by zones, the truth is that there are a number of restrictions that make it very difficult to perform a more robust analysis. First of all, Uber offers information about the origin and destination areas of the trips, but not of the intermediate zones that it crosses. Hence, trying to infer the route using the shortest path technique does not represent reality. The map of the city only includes zones, which cover several roads. That means that the shortest path in the graph may not be the same as the real route of the trip. That causes a great inaccuracy to perform a more precise analysis.
 
-The analysis of traffic in a city can be very important to detect which areas are usually more saturated, the time at which this occurs and for how long. Being able to estimate these three variables with precision would be very useful to be able to carry out better urban planning. With this project we intend to make an approximation to this analysis using the traffic flow of Uber users as data.
+Moreover, in the graph all the nodes are treated as equal, because the size and distances in meters are not taken into account. However, areas on the map vary greatly in size, and distances are important for a driver. Suppose, for example, a case in which there are 5 areas adjacent to each other: 4 small zones and a relatively large area. If the shortest path between two of the small zones is through the other two small zones on the map, the graph will consider that the shortest route will be through the large zone, since the number of jumps would be 2 instead of 3 and. Therefore, an error would be made.
 
-A graph allows us to perform multiple calculations and analyzes in a quick and comfortable way. Since the Uber dataset of the city structure has a GeoJSON format, it is easy to obtain the graph of it from functions already predefined in R packages, such as _igraph_ or _rgeos_. In this way, each node of the graph corresponds to a zone of the map, and each edge represents the adjacency of zones, in such a way that two nodes directly connected by an edge in the graph correspond to two adjacent zones in the map.
+Indeed, the main problem of the presented method is the calculation of shortest paths in the graph. As said before, the route may not be the same as the real one. However, some good points about it is that it is a simple and fast method, which do not require great computing resources. An altertative for this method would be to use some API for calculating trip routes, such as Google Maps API or OSRM (Open Source Routing Machine). Using those, it the calculated route would be much more precise, and it would be necessary to analyze which zones it traverses.
 
-The calculation of centralities and the detection of communities on the graph are two analyzes that give us an idea about how the traffic flow in the city behaves, in such a way that they allow us to have an idea about what we are looking for. For the case that we analyze in this project, in the city of Amsterdam, the analysis of the centralities indicates that the most central areas of the city are those that have more traffic with respect to the most remote areas, at the same time that, in peak hours, the amount of traffic intensifies in certain areas of the center. The detection of communities (AÑADIR AQUÍ ALGO...............................).
-
-Although the results obtained allow us to get an idea about how traffic in the city behaves by zones, the truth is that there are a number of restrictions that make it impossible to perform a more thorough and accurate analysis. First of all, Uber offers information about the area of origin and the destination of the routes followed in each trip, but not of the intermediate zones that it crosses, so try to deduce the route using the shortest route technique does not represent reality. At the same time, the map of the city only includes zones, which cover several roads, and that causes a great inaccuracy to perform a more precise analysis.
-
-On the other hand, discovering the route of each trip from the graph can also be an error. In the graph all the nodes are equal, the size and distances in meters are not taken into account. However, areas on the map vary greatly in size, and distance is important. Suppose, for example, a case in which there are 5 areas adjacent to each other, 4 small zones and a relatively large area. If the shortest path between two of the small zones is through the other two small zones on the map, the graph will consider that the shortest route will be through the large zone, since the number of jumps would be 2 instead of 3 and, therefore, an error would be made.
-
-Despite these drawbacks and the improvements that could be made in the analysis (for example, using tools such as the Google Maps API to calculate the routes), the results presented in this project may coincide with reality and are valid for knowing the behavior of a city at the zone level, not only of the city of Amsterdam but of any other city that Uber offers in its datasets repository.
+Despite these drawbacks and the improvements that could be made in the analysis, the results presented in this project may coincide with reality and are valid for knowing the behavior of a city at the zone level, not only of the city of Amsterdam but of any other city that Uber offers in its datasets repository.
 
 \newpage
 # Code used
@@ -269,8 +254,10 @@ setwd("C:\\Users\\Usuario\\TELECO\\Master Tec Teleco\\2º CURSO\\Redes Sociales y
 amsterdam <- read.csv("data\\amsterdam-wijk-2018-1-OnlyWeekdays-HourlyAggregate.csv", header = TRUE, sep = ",")
 polys <- readOGR("data\\amsterdam_wijk.json")
 
+#Adjacency matrix
 adj_matrix <- gTouches(polys, byid = TRUE)
 
+#Print zones
 plot(polys, main = "Zones in Amsterdam", col="#f44336",border="black", lwd=2)
 
 #Template graph: undirected and weighted (value 1 by default). Some centralities may fail for weight=0
@@ -301,65 +288,45 @@ spinglass.com <- list()
 walktrap.com <- list()
 optimal.com <- list()
 
-#Index i=TRUE means that graph i is weakly connected
-is_connected <- list() 
-
 for (hour in 1:24){
   current_data <- subset(amsterdam, hod==hour-1)
   g[[length(g) + 1]] <- g_original
   
   for(i in 1:nrow(current_data)) {
     trip <- current_data[i,]
-    #ID = position in matrix
+    #Zone ID = position in matrix
     from <- trip$sourceid
     to <- trip$dstid
     
-    #Se convierte el camino A B C en vector A B B C
+    #Path A->B->C becomes vector (A, B, B, C)
     route <- as.vector(sp[[from]]$vpath[[to]])
     EP = rep(route, each=2)[-1]
     EP = EP[-length(EP)]
     
-    #Coger ID de arista AB y BC (para acceder a E(g[[hour]]))
+    #Take edges IDs for accesing E(g[[hour]]))
     edge_ids <- get.edge.ids(g[[hour]], EP)
     
-    #Incrementar weight de arista AB y BC
+    #Increase weight of edges with previous IDs
     E(g[[hour]])$weight[edge_ids] = E(g[[hour]])$weight[edge_ids] + 1
     
   }
   
-  is_connected[[length(is_connected) +1]] <- is.connected(g[[hour]], mode="weak")
-  
-  ##CENTRALITIES
-  #Grado de un nodo (sin peso)
+  #CENTRALITIES
   degree.cent[[length(degree.cent) + 1]] <- centr_degree(g[[hour]], mode = "all")
-  
-  #Strength = suma de pesos de aristas por nodo
   degree.str.cent[[length(degree.str.cent) + 1]] <- strength(g[[hour]], mode = "all")
-  
-  #Numero de caminos con menos tráfico que pasan por un nodo (suma de pesos minimizada)
   betweenness.cent[[length(betweenness.cent) + 1]] <- betweenness(g[[hour]], directed = FALSE)
-  
-  #Parecido a pagerank. Una zona está congestionada si lo está, o si sus adyacentes también. Cuanto mayor, mejor.
   eigen.cent[[length(eigen.cent) + 1]] <- eigen_centrality(g[[hour]], directed = FALSE)
-  
-  #This is a disconnected graph, so closeness may not be usefull
   closeness.cent[[length(closeness.cent) + 1]] <- closeness(g[[hour]], mode = "all")
-  
-  #PageRank
   page.rank.cent[[length(page.rank.cent)+1]] <- page_rank(g[[hour]])
   
-  
-  
-  ##COMUNITIES
+  #COMUNITIES
   betweenness.com[[length(betweenness.com) + 1]] <- cluster_edge_betweenness(g[[hour]])
   fast.greedy.com[[length(fast.greedy.com) + 1]] <- cluster_fast_greedy(g[[hour]])
   label.prop.com[[length(label.prop.com) + 1]] <- cluster_label_prop(g[[hour]])
   walktrap.com[[length(walktrap.com) + 1]] <- cluster_walktrap(g[[hour]])
   
 }
-#Number of connected graphs
-sum(as.integer(is_connected))
-#Show centralities
+#Colors for centralities
 rbPal <- colorRampPalette(c('#ffcdd2','#b71c1c'))
 
 #Strength
@@ -370,7 +337,6 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\degree.str.cent\\*.png img\\degree.str.cent\\degree.str.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
   
 #Degree
@@ -381,7 +347,6 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\degree.cent\\*.png img\\degree.cent\\degree.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
   
 #Closeness
@@ -392,9 +357,8 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\closeness.cent\\*.png img\\closeness.cent\\closeness.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
-  
+
 #Betweenness
 png(filename="img\\betweenness.cent\\%02d.png")
 for (hour in 1:24){
@@ -403,7 +367,6 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\betweenness.cent\\*.png img\\betweenness.cent\\betweenness.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
 
 #Eigen
@@ -414,7 +377,6 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\eigen.cent\\*.png img\\eigen.cent\\eigen.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
 
 #PageRank
@@ -425,8 +387,8 @@ for (hour in 1:24){
 }
 dev.off()
 system("\"C:\\Program Files\\ImageMagick-7.0.8-Q16\\magick.exe\" -delay 80 img\\page.rank.cent\\*.png img\\page.rank.cent\\page.rank.cent.gif")
-#file.remove(list.files(pattern=".png"))
 
+#Communities
 png(filename="img\\betweenness.com\\%02d.png")
 for (hour in 1:24){
   plot(polys, main = paste("Communities in Amsterdam at ", (hour-1), ":00 h", sep=""), col=membership(betweenness.com[[hour]]),border="black", lwd=2)
